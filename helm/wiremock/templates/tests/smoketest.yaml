@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-smoketest"
+  labels:
+    release: {{ .Release.Name | quote }}
+    app: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade,test-success
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  containers:
+    - name: curl
+      image: radial/busyboxplus:curl
+      command: ['curl']
+      args: ['-f', '-s', '--write-out', 'http_code=%{http_code}\n', '{{ template "chart.fullname" . }}:{{ .Values.service.port }}/hello']
+  restartPolicy: Never

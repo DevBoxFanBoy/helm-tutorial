@@ -1,0 +1,15 @@
+apiVersion: v1
+name: wiremock
+version: "1"
+appVersion: "1"
+description: Chart to deploy Wiremock to Kubernetes.
+keywords:
+  - wiremock
+home: "https://wiremock.org"
+sources:
+  - "https://github.com/rodolpheche/wiremock"
+maintainers:
+  - name: DevBoxFanBoy
+    email: example@notexist.com
+engine: gotpl
+icon: http://example.com/icon.png

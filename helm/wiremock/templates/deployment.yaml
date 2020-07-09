@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "chart.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "chart.name" . }}
+    chart: {{ template "chart.name_version" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "chart.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+{{- if .Values.podAnnotations }}
+      # Allows custom annotations to be specified
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+      name: {{ template "chart.name" . }}
+      labels:
+        app: {{ template "chart.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ template "chart.name" . }}
+          image: rodolpheche/wiremock:latest
+          imagePullPolicy: Always
+          #imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            runAsUser: 65534 # nonroot
+            readOnlyRootFilesystem: {{ .Values.app.readOnlyRootFilesystem }}
+          ports:
+            - name: serviceport
+              containerPort: {{ .Values.app.serverPort }}
+              protocol: TCP
+          readinessProbe:
+            #tcpSocket:
+            # port: serviceport
+            httpGet:
+              path: /ready
+              port: serviceport
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 10
+          livenessProbe:
+            #tcpSocket:
+            # port: serviceport
+            httpGet:
+              path: /health
+              port: serviceport
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+          env:
+            - name: VERSION
+              value: '#VERSION#'
+          volumeMounts:
+            - name: config-volume
+              mountPath: /home/wiremock/mappings
+            - name: files-volume
+              mountPath: /home/wiremock/__files
+{{- if .Values.app.resources }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+{{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Values.app.mountedConfigMapName }}
+        - name: files-volume
+          configMap:
+            name: {{ .Values.app.mountedFilesConfigMapName }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
