@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: {{ template "chart.name" . }}
-          image: rodolpheche/wiremock:latest
+          image: rodolpheche/wiremock:2.27.0
           imagePullPolicy: Always
           #imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
@@ -39,8 +39,6 @@ spec:
               containerPort: {{ .Values.app.serverPort }}
               protocol: TCP
           readinessProbe:
-            #tcpSocket:
-            # port: serviceport
             httpGet:
               path: /ready
               port: serviceport
@@ -49,8 +47,6 @@ spec:
             successThreshold: 1
             failureThreshold: 10
           livenessProbe:
-            #tcpSocket:
-            # port: serviceport
             httpGet:
               path: /health
               port: serviceport
@@ -60,7 +56,7 @@ spec:
             failureThreshold: 10
           env:
             - name: VERSION
-              value: '#VERSION#'
+              value: '2.27.0'
           volumeMounts:
             - name: config-volume
               mountPath: /home/wiremock/mappings

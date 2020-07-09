@@ -1,7 +1,7 @@
 apiVersion: v1
 name: wiremock
-version: "1"
-appVersion: "1"
+version: "2.27.0"
+appVersion: "2.27.0"
 description: Chart to deploy Wiremock to Kubernetes.
 keywords:
   - wiremock
